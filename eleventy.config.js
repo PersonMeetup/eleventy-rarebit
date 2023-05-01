@@ -64,10 +64,16 @@ function rarebit(eleventyConfig, opts = {}) {
 		let output = [];
 
 		// https://stackoverflow.com/a/24594123
-		const pages = fs
-			.readdirSync(comicDir, { withFileTypes: true })
-			.filter((dirent) => dirent.isDirectory())
-			.map((dirent) => dirent.name);
+		try {
+			const pages = fs
+				.readdirSync(comicDir, { withFileTypes: true })
+				.filter((dirent) => dirent.isDirectory())
+				.map((dirent) => dirent.name);
+		}
+		catch (err) {
+			console.log(`[eleventy-rarebit] Plugin is installed, but comic folder "${options.dir.comic}" does not exist!`)
+			return '';
+		}
 
 		// "X folders found. Transforming contents into pages"
 		//console.log(pages);
