@@ -1,0 +1,11 @@
+---
+layout: rarebit.njk
+--- 
+<div class="archive">
+	<ol>
+		{% assign comic = collections.rarebit | rarebitChapters: "chapter1" %}
+		{% for page in comic %}
+			<li>{% rarebitRenderArchive page.data %}</li>
+		{% endfor %}
+		</ol>
+</div>

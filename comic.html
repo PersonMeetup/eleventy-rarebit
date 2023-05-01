@@ -1,0 +1,17 @@
+---
+layout: rarebit.njk
+pagination:
+  data: rarebitData
+  size: 1
+  alias: comic
+  addAllPagesToCollections: true
+permalink: "comic/{{ pagination.pageNumber | plus: 1 }}/"
+eleventyComputed:
+  title: "{{ comic.title }}"
+---
+
+<h2>{{ title }}</h2>
+
+{% rarebitRenderNav pagination %}
+
+<div class="comic">{% rarebitRenderComic comic %}</div>
