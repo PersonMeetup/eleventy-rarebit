@@ -16,8 +16,8 @@ function archiveRender(collection, reverse) {
  * @param {Object.Object} opts
  */
 function rarebit(eleventyConfig, opts = {}) {
-	let options = Object.assign(
-		{
+	let options = {
+		...{
 			dir: {
 				comic: "_comic",
 				image: "",
@@ -38,9 +38,8 @@ function rarebit(eleventyConfig, opts = {}) {
 			},
 			thumbnailBaseName: 'thumb',
 			dataFileBaseName: ''
-		},
-		opts
-	);
+		}, opts
+	};
 
 	if (path.isAbsolute(options.dir.comic)) {
 		throw new Error(
@@ -62,10 +61,11 @@ function rarebit(eleventyConfig, opts = {}) {
 	eleventyConfig.addGlobalData("rarebitData", () => {
 		// Return object with list of chapters and coresponding metadata
 		let output = [];
+		let pages;
 
-		// https://stackoverflow.com/a/24594123
 		try {
-			const pages = fs
+			// https://stackoverflow.com/a/24594123
+			pages = fs
 				.readdirSync(comicDir, { withFileTypes: true })
 				.filter((dirent) => dirent.isDirectory())
 				.map((dirent) => dirent.name);
