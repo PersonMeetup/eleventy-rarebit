@@ -2,16 +2,6 @@ const path = require("path");
 const fs = require("fs");
 
 /**
- *
- * @param {Array} collection
- * @param {Boolean} reverse
- * @returns
- */
-function archiveRender(collection, reverse) {
-	return;
-}
-
-/**
  * @param {import("@11ty/eleventy").UserConfig} eleventyConfig
  * @param {Object.Object} opts
  */
@@ -22,7 +12,7 @@ function rarebit(eleventyConfig, opts = {}) {
 				comic: "_comic",
 				image: "",
 			},
-			imageFormats: ["jpg", "png", "gif"],
+			imageFormats: ["jpg", "png", "gif"],		// Todo: Filter images by extensions
 			imageRender: (img, alt) => {
 				if (img === '') return '';
 				return `<img src="${img}" alt="${alt}">`
@@ -198,6 +188,7 @@ function rarebit(eleventyConfig, opts = {}) {
 			);
 		}
 
+		// Todo: Include option for images in navigation
 		if (this.page.url != obj.first) {
 			output = output + `<a href="${obj.first}">First</a> `
 		}
@@ -217,6 +208,12 @@ function rarebit(eleventyConfig, opts = {}) {
 	eleventyConfig.addShortcode("rarebitRenderComic", function (curPage) {
 		let output = "";
 		let obj;
+
+		if (this.page.rarebit) {
+			throw new Error(
+				`Issue with "rarebitRenderComic" shortcode in templates (11ty page variable was overwritten.)`
+			);
+		}
 
 		try {
 			if (curPage.items) {
@@ -283,7 +280,7 @@ function rarebit(eleventyConfig, opts = {}) {
 			obj = curPage.pagination.items[0];
 		} else {
 			throw new Error(
-				`Issue with "rarebitRenderComic" shortcode in ${this.page.inputPath} (input not a proper page object.)`
+				`Issue with "rarebitRenderComic" shortcode in ${this.page.inputPath} (input is not a proper page object.)`
 			);
 		}
 
@@ -308,9 +305,7 @@ function rarebit(eleventyConfig, opts = {}) {
 		});
 	});
 
-	// Todo: Filter collections by chapter object
 	eleventyConfig.addFilter("rarebitChapters", function (value, chapter) {
-		//console.log(value.filter(obj => obj.data.pagination.items[0].chapters.includes(chapter)));
 		return value.filter(obj => obj.data.pagination.items[0].chapters.includes(chapter));
 	});
 
