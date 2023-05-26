@@ -46,8 +46,29 @@ function rarebit(eleventyConfig, opts = {}) {
 		outputDir = dir.output;
 	});
 
+	eleventyConfig.addTemplateFormats(options.imageFormats);
+
+    eleventyConfig.addExtension(options.imageFormats, {
+        outputFileExtension: "*",
+        compile: async (inputContent, inputPath) => {
+            return async () => {
+                return;
+            }
+        }
+    })
+
+	eleventyConfig.addGlobalData("eleventyComputed.eleventyExcludeFromCollections", function() {
+		return (data) => {
+			if(options.imageFormats.includes(path.extname(data.page.inputPath)) && !data.rarebit) {
+				return true;
+			}
+			return data.eleventyExcludeFromCollections;
+		}
+	});
 
 
+
+	/*
 	eleventyConfig.addGlobalData("rarebitData", () => {
 		// Return object with list of chapters and coresponding metadata
 		let output = [];
@@ -171,6 +192,7 @@ function rarebit(eleventyConfig, opts = {}) {
 
 		return output;
 	});
+	*/
 
 
 
