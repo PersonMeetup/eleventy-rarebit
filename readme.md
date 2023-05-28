@@ -12,7 +12,7 @@ eleventy-rarebit is a plugin that adds similar functionality found in [geno7's](
 
 If you're new to Eleventy, make sure you go over its [Getting Started](https://www.11ty.dev/docs/getting-started/) guide.
 
-### Manual Installation 
+### Manual Installation
 
 In the same folder as your Eleventy project, run the following command:
 
@@ -28,10 +28,10 @@ Open up your Eleventy [config file](https://www.11ty.dev/docs/config/) and add t
 const eleventyRarebit = require("eleventy-rarebit");
 
 module.exports = function (eleventyConfig) {
-	// If your config already has a module.exports, just
-	// add the following code inside of it.
-	eleventyConfig.addPlugin(eleventyRarebit);
-}
+  // If your config already has a module.exports, just
+  // add the following code inside of it.
+  eleventyConfig.addPlugin(eleventyRarebit);
+};
 ```
 
 ## Usage
@@ -42,12 +42,12 @@ module.exports = function (eleventyConfig) {
 const eleventyRarebit = require("eleventy-rarebit");
 
 module.exports = function (eleventyConfig) {
-	eleventyConfig.addPlugin(eleventyRarebit, {
-		dir: {
-			comic: "_comic",
-			img: ""
-		},
-		thumbnailBaseName: 'thumb'
-	});
-}
+  eleventyConfig.addPlugin(eleventyRarebit, {
+    dir: {
+      comic: "_comic",
+      img: "",
+    },
+    thumbnailBaseName: "thumb",
+  });
+};
 ```

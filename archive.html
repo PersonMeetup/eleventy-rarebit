@@ -4,20 +4,20 @@ layout: rarebit.njk
 
 <div class="archive">
   <ol>
-		{% assign comic = collections.teena %}
-		{% for page in comic %}
-			<li>{% rarebitRenderArchive page.data %}</li>
-		{% endfor %}
-		</ol>
+    {%- assign comic = collections.teena -%}
+	{%- for page in comic -%}
+    <li>{% rarebitRenderArchive page.data %}</li>
+    {%- endfor -%}
+  </ol>
 </div>
 
 <h2>Chapter 1</h2>
 
 <div class="archive">
   <ol>
-		{% assign comic = collections.teena | chapter: "chapter1" %}
-		{% for page in comic %}
-			<li>{% rarebitRenderArchive page.data %}</li>
-		{% endfor %}
-		</ol>
+    {%- assign comic = collections.teena | chapter: "chapter1" -%}
+	{%- for page in comic -%}
+    <li>{% rarebitRenderArchive page.data %}</li>
+    {%- endfor -%}
+  </ol>
 </div>
