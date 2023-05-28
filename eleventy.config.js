@@ -8,10 +8,6 @@ const fs = require("fs");
 function rarebit(eleventyConfig, opts = {}) {
 	let options = {
 		...{
-			dir: {
-				comic: "_comic",
-				image: "",
-			},
 			imageFormats: ["jpg", "png", "gif"],		// Todo: Filter images by extensions
 			imageRender: (img, alt) => {
 				if (img === '') return '';
@@ -26,25 +22,9 @@ function rarebit(eleventyConfig, opts = {}) {
 									</div>
 								</a>`
 			},
-			thumbnailBaseName: 'thumb',
-			dataFileBaseName: ''
+			thumbnailBaseName: 'thumb'
 		}, opts
 	};
-
-	if (path.isAbsolute(options.dir.comic)) {
-		throw new Error(
-			"Issue with Rarebit addPlugin second arguement options object (comic argument should be a relative path.)"
-		);
-	}
-
-
-
-	let comicDir = options.dir.comic;
-	let outputDir;
-	eleventyConfig.on("eleventy.before", async ({ dir, runMode, outputMode }) => {
-		comicDir = path.join(dir.input, options.dir.comic);
-		outputDir = dir.output;
-	});
 
 	eleventyConfig.addTemplateFormats(options.imageFormats);
 
@@ -57,9 +37,14 @@ function rarebit(eleventyConfig, opts = {}) {
         }
     })
 
-	eleventyConfig.addGlobalData("eleventyComputed.eleventyExcludeFromCollections", function() {
+	eleventyConfig.addGlobalData("eleventyComputed.eleventyExcludeFromCollections", () => {
 		return (data) => {
-			if(options.imageFormats.includes(path.extname(data.page.inputPath)) && !data.rarebit) {
+			if (
+        options.imageFormats.includes(
+          path.extname(data.page.inputPath)
+        ) && !(path.normalize(image.page.filePathStem)
+          .split(path.sep).includes(data.comicRoot)
+        )) {
 				return true;
 			}
 			return data.eleventyExcludeFromCollections;
@@ -68,137 +53,102 @@ function rarebit(eleventyConfig, opts = {}) {
 
 
 
-	/*
-	eleventyConfig.addGlobalData("rarebitData", () => {
-		// Return object with list of chapters and coresponding metadata
+  eleventyConfig.addFilter("rarebit", function(value) {
 		let output = [];
-		let pages;
+    let genericThumb = "";
 
-		try {
-			// https://stackoverflow.com/a/24594123
-			pages = fs
-				.readdirSync(comicDir, { withFileTypes: true })
-				.filter((dirent) => dirent.isDirectory())
-				.map((dirent) => dirent.name);
-		}
-		catch (err) {
-			console.log(`[eleventy-rarebit] Plugin is installed, but comic folder "${options.dir.comic}" does not exist!`)
-			return '';
-		}
+    for (let collectionPos = 0; collectionPos < value.length; collectionPos++) {
+      const image = value[collectionPos];
+      const outputPath = path.normalize(image.page.outputPath).split(path.sep);
+      const rootPos = outputPath.indexOf(image.data.comicRoot);
+      let pageThumb = '';
+      let pageFolder = '';
+      let pageExists = false;
 
-		// "X folders found. Transforming contents into pages"
-		//console.log(pages);
+      // Images stored in comicRoot become the name of their target folder
+      if (outputPath[rootPos + 1] == path.basename(image.page.outputPath)) {
+        pageFolder = image.page.fileSlug;
+      } else {
+        pageFolder = outputPath[rootPos + 1];
+      };
 
-		for (const page of pages) {
+      if (path.basename(image.page.outputPath).includes(options.thumbnailBaseName)) {
+        // We found a thumbnail image; store it so we can update data in a moment
+        if (!genericThumb && (pageFolder === options.thumbnailBaseName)) {
+          genericThumb = image.page.inputPath;
+        }
+        pageThumb = image.page.inputPath;
+      };
+
+      // Add on to existing objects
+      for (let outputPos = 0; outputPos < output.length; outputPos++) {
+        if (output[outputPos].folder === pageFolder) {
+          if (pageThumb) {
+            output[outputPos] = { ...output[outputPos], thumb: pageThumb }
+          } else {
+            if (!output[outputPos].images) {
+              output[outputPos] = { ...output[outputPos], images: [image.page.inputPath] }
+            } else {
+              output[outputPos].images.push(image.page.inputPath);
+              output[outputPos].images.sort((a,b) => a.localeCompare(b));
+            }
+            // Todo: Update date to latest time given?
+          };
+          pageExists = true;
+          continue;
+        };
+      };
+      if (pageExists || (pageFolder === options.thumbnailBaseName)) {
+        continue;
+      };
+
+      const {
+        eleventyComputed,
+        eleventy,
+        pkg,
+        page,
+        collections,
+        eleventyExcludeFromCollections,
+        comicRoot,
+        ...filteredData
+      } = image.data;
+
 			let pageObj = {
-				folder: page,
-				rarebit: true,
-				images: fs
-					.readdirSync(path.join(comicDir, page))
-					.filter((file) => path.extname(file) !== ".json")
-					.filter((file) => path.basename(file, path.extname(file)) !== options.thumbnailBaseName)
+				...filteredData,
+        outputDir: outputPath.slice(0, rootPos).join('/'),
+        folder: pageFolder,
+        date: image.page.date
 			};
 
-			// Get folder data object
-			try {
-				let pageData = JSON.parse(
-					fs.readFileSync(path.join(comicDir, page, `${page}.json`))
-				);
+      if (pageThumb) {
+        pageObj = { ...pageObj, thumb: pageThumb };
+      } else {
+        pageObj = { ...pageObj, images: [image.page.inputPath] };
+      }
 
-				if (pageData.date) {
-					pageData = { ...pageData, date: new Date(pageData.date) };
-				}
+      output.push(pageObj);
+    };
 
-				pageObj = Object.assign(pageData, pageObj);
+    for (let outputPos = 0; outputPos < output.length; outputPos++) {
+      if (!output[outputPos].thumb) {
+        output[outputPos] = { ...output[outputPos], thumb: genericThumb }
+      };
+    };
 
-				if (pageObj.date === undefined) {
-					// from image file metadata, get latest modified date
-					let dates = [];
-
-					for (const image of pageObj.images) {
-						dates.push(fs.statSync(path.join(comicDir, page, image)).mtime);
-					}
-					pageObj = { ...pageObj, date: new Date(Math.max(...dates.map(e => new Date(e)))) }
-				}
-			} catch (err) {
-				let dates = [];
-
-				for (const image of pageObj.images) {
-					dates.push(fs.statSync(path.join(comicDir, page, image)).mtime);
-				}
-				pageObj = { ...pageObj, date: new Date(Math.max(...dates.map(e => new Date(e)))) }
-			}
-
-			// Get thumbnail object
-			let thumb = undefined;
-			let i = 2;
-			while (i > 0) {
-				switch (i) {
-					case 2:
-						try {
-							thumb = path.join(page, fs
-								.readdirSync(path.join(comicDir, page))
-								.filter((file) => file.startsWith(options.thumbnailBaseName))[0]);
-							i = 0;
-						} catch (err) {
-							i--;
-						}
-						break;
-					case 1:
-						try {
-							thumb = fs
-								.readdirSync(comicDir)
-								.filter((file) => file.startsWith(options.thumbnailBaseName))[0];
-							i = 0;
-						} catch (err) {
-							i--;
-						}
-						break;
-				}
-			}
-			if (thumb !== undefined) {
-				if (!fs.existsSync(path.join(outputDir, options.dir.image, "thumb"))) {
-					fs.mkdirSync(path.join(outputDir, options.dir.image, "thumb"), { recursive: true });
-				}
-				if (path.dirname(thumb) == '.') {
-					if (fs.existsSync(path.join(outputDir, options.dir.image, "thumb", `default${path.extname(thumb)}`))) {
-						// Since we shouldn't repeat the copy move anymore than
-						// we need to, push to output and continue the loop.
-						pageObj = { ...pageObj, thumb: path.join(options.dir.image, "thumb", `default${path.extname(thumb)}`) };
-						output.push(pageObj);
-						continue;
-					}
-					fs.copyFile(
-						path.join(comicDir, thumb),
-						path.join(outputDir, options.dir.image, "thumb", `default${path.extname(thumb)}`),
-						(err) => {
-							if (err) throw err;
-						}
-					);
-					pageObj = { ...pageObj, thumb: path.join(options.dir.image, "thumb", `default${path.extname(thumb)}`) };
-				} else {
-					fs.copyFile(
-						path.join(comicDir, thumb),
-						path.join(outputDir, options.dir.image, "thumb", `${page}${path.extname(thumb)}`),
-						(err) => {
-							if (err) throw err;
-						}
-					);
-					pageObj = { ...pageObj, thumb: path.join(options.dir.image, "thumb", `${page}${path.extname(thumb)}`) };
-				}
-			}
-			output.push(pageObj);
-		}
-
-		return output;
+		return output.sort((a,b) => (a.folder > b.folder) ? 1 : ((b.folder > a.folder) ? -1 : 0));
 	});
-	*/
-
+	
 
 
 	eleventyConfig.addShortcode("rarebitRenderNav", function (curPage) {
 		let output = "";
 		let obj;
+
+    if (!curPage) {
+      throw new Error(
+				`Issue with "rarebitRenderNav" shortcode in ${this.page.inputPath} (input is undefined.)`
+			);
+    }
 
 		if (curPage.href) {
 			obj = curPage.href
@@ -229,63 +179,34 @@ function rarebit(eleventyConfig, opts = {}) {
 
 	eleventyConfig.addShortcode("rarebitRenderComic", function (curPage) {
 		let output = "";
-		let obj;
 
-		if (this.page.rarebit) {
-			throw new Error(
-				`Issue with "rarebitRenderComic" shortcode in templates (11ty page variable was overwritten.)`
+    if (!curPage) {
+      throw new Error(
+				`Issue with "rarebitRenderNav" shortcode in ${this.page.inputPath} (input is undefined.)`
 			);
-		}
+    }
 
-		try {
-			if (curPage.items) {
-				obj = curPage.items[0];
-			} else if (curPage.rarebit == undefined) {
-				obj = curPage[0];
-			} else {
-				obj = curPage
-			}
-		} catch (err) {
-			throw new Error(
-				`Issue with "rarebitRenderComic" shortcode in ${this.page.inputPath} (input not a proper pagination object.)`
-			);
-		}
-
-		for (const image of obj.images) {
+		for (const image of curPage.images) {
 			let imagePath;
-			if (!options.dir.image) {
-				if (!fs.existsSync(path.join(outputDir, this.page.url))) {
-					fs.mkdirSync(path.join(outputDir, this.page.url), { recursive: true });
-				}
-				fs.copyFile(
-					path.join(comicDir, obj.folder, image), // Input
-					path.join(outputDir, this.page.url, image), // Output
-					(err) => {
-						if (err) throw err;
-					}
-				);
-				imagePath = path.join(this.page.url, image);
-			} else {
-				if (!fs.existsSync(path.join(outputDir, options.dir.image, obj.folder))) {
-					fs.mkdirSync(path.join(outputDir, options.dir.image, obj.folder), { recursive: true });
-				}
-				fs.copyFile(
-					path.join(comicDir, obj.folder, image), // Input
-					path.join(outputDir, options.dir.image, obj.folder, image), // Output
-					(err) => {
-						if (err) throw err;
-					}
-				);
-				imagePath = path.join(options.dir.image, obj.folder, image);
+			if (!fs.existsSync(path.join(curPage.outputDir, this.page.url))) {
+				fs.mkdirSync(path.join(curPage.outputDir, this.page.url), { recursive: true });
 			}
+			fs.copyFile(
+				path.join(image), // Input
+				path.join(curPage.outputDir, this.page.url, path.basename(image)), // Output
+				(err) => {
+					if (err) throw err;
+				}
+			);
+			imagePath = path.join(this.page.url, path.basename(image));
 
 			let altText = '';
-			if (typeof obj.alt == 'string') {
-				altText = obj.alt;
-			} else if (typeof obj.alt == 'object') {
-				altText = obj.alt[obj.images.indexOf(image)];
+			if (typeof curPage.alt == 'string') {
+				altText = curPage.alt;
+			} else if (typeof curPage.alt == 'object') {
+				altText = curPage.alt[curPage.images.indexOf(image)];
 			} else {
-				console.log(`[eleventy-rarebit] Missing alt text for ${image} in '${obj.folder}' folder.`);
+				console.log(`[eleventy-rarebit] Missing alt text for ${image}.`);
 			}
 
 			output = output + options.imageRender(imagePath, altText);
@@ -294,46 +215,49 @@ function rarebit(eleventyConfig, opts = {}) {
 	});
 
 	eleventyConfig.addShortcode("rarebitRenderArchive", function (curPage) {
-		let obj;
-
-		if (curPage.data) {
-			obj = curPage.data.pagination.items[0];
-		} else if (curPage.pagination) {
-			obj = curPage.pagination.items[0];
-		} else {
-			throw new Error(
-				`Issue with "rarebitRenderComic" shortcode in ${this.page.inputPath} (input is not a proper page object.)`
+    if (!curPage) {
+      throw new Error(
+				`Issue with "rarebitRenderArchive" shortcode in ${this.page.inputPath} (input is undefined.)`
 			);
-		}
+    }
+
+    console.log(curPage);
+
+    // Copy thumbnail to comic folders
+    if (!fs.existsSync(path.join(curPage.comic.outputDir, curPage.page.url))) {
+      fs.mkdirSync(path.join(curPage.comic.outputDir, curPage.page.url), { recursive: true });
+    }
+    fs.copyFile(
+      path.join(curPage.comic.thumb), // Input
+      path.join(curPage.comic.outputDir, curPage.page.url, path.basename(curPage.comic.thumb)), // Output
+      (err) => {
+        if (err) throw err;
+      }
+    );
+    thumbPath = path.join(curPage.page.url, path.basename(curPage.comic.thumb));
 
 		const title = () => {
-			if (!obj.title) {
-				return `Page ${obj.folder}`
+			if (!curPage.comic.title) {
+				return `Page ${path.normalize(curPage.page.url).split(path.sep).at(-2)}`
 			} else {
-				return obj.title;
+				return curPage.comic.title;
 			}
 		}
 
-		return options.archiveRender(curPage.page.url, `/${obj.thumb}`, title(), obj.date);
+		return options.archiveRender(curPage.page.url, thumbPath, title(), curPage.page.date);
 	});
 
 
 
-	eleventyConfig.addCollection("rarebit", (collectionApi) => {
+	eleventyConfig.addCollection("comics", (collectionApi) => {
 		return collectionApi.getAll().filter((item) => {
-			if (item.data.pagination) {
-				return "rarebit" in item.data.pagination.items[0];
-			}
+      return "comicRoot" in item.data;
 		});
 	});
 
-	eleventyConfig.addFilter("rarebitChapters", function (value, chapter) {
-		return value.filter(obj => obj.data.pagination.items[0].chapters.includes(chapter));
+	eleventyConfig.addFilter("chapter", function (value, chapter) {
+		return value.filter(obj => obj.data.comic.chapters.includes(chapter));
 	});
-
-
-
-	eleventyConfig.addWatchTarget(path.join("**", options.dir.comic, "**/*.*"));
 }
 
 module.exports = rarebit;

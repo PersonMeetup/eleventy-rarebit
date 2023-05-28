@@ -1,13 +1,22 @@
----
-layout: rarebit.njk
-pagination:
-  data: rarebitData
-  size: 1
-  alias: comic
-  addAllPagesToCollections: true
-permalink: "comic/{{ pagination.pageNumber | plus: 1 }}/"
-eleventyComputed:
-  title: "{{ comic.title }}"
+---js
+{
+  pagination: {
+    data: "collections.comics",
+    size: 1,
+    alias: "comic",
+    addAllPagesToCollections: true,
+    before: function(paginationData) {
+        return this.rarebit(paginationData);
+      }
+  },
+  layout: "rarebit.njk",
+  tags: ['teena'],
+  permalink: data => `comic/${data.pagination.pageNumber + 1}/`,
+  eleventyComputed: {
+    title: data => data.comic.title,
+    title: data => data.comic.notes
+  }
+}
 ---
 
 <h2>{{ title }}</h2>
