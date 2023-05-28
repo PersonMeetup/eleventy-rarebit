@@ -1,25 +1,26 @@
 {
-	"name": "eleventy-rarebit",
-	"version": "0.1.0",
-	"description": "eleventy-rarebit is a plugin that adds similar functionality found in [geno7's](https://geno7.neocities.org/) [Rarebit](https://rarebit.neocities.org/) webcomic template to Eleventy.",
-	"main": "eleventy.config.js",
-	"scripts": {
-		"build": "eleventy",
-		"start": "eleventy --serve"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/PersonMeetup/eleventy-rarebit.git"
-	},
-	"bugs": {
-		"url": "https://github.com/PersonMeetup/eleventy-rarebit/issues"
-	},
-	"homepage": "https://github.com/PersonMeetup/eleventy-rarebit#readme",
-	"keywords": [],
-	"author": "Leslie \"Person Meetup\" Swan",
-	"license": "MIT",
-	"devDependencies": {
-		"@11ty/eleventy": "^2.0.1",
-		"chokidar": "^3.5.3"
-	}
+  "name": "eleventy-rarebit",
+  "version": "0.1.0",
+  "description": "eleventy-rarebit is a plugin that adds similar functionality found in [geno7's](https://geno7.neocities.org/) [Rarebit](https://rarebit.neocities.org/) webcomic template to Eleventy.",
+  "main": "eleventy.config.js",
+  "scripts": {
+    "build": "eleventy",
+    "start": "eleventy --serve"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PersonMeetup/eleventy-rarebit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/PersonMeetup/eleventy-rarebit/issues"
+  },
+  "homepage": "https://github.com/PersonMeetup/eleventy-rarebit#readme",
+  "keywords": [],
+  "author": "Leslie \"Person Meetup\" Swan",
+  "license": "MIT",
+  "devDependencies": {
+    "@11ty/eleventy": "^2.0.1",
+    "chokidar": "^3.5.3",
+    "prettier": "^2.8.8"
+  }
 }

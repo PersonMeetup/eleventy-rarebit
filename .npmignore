@@ -1,7 +1,7 @@
 node_modules
 _includes
 _site
-_comic
+comic
 comic.html
 archive.html
 readme.json
