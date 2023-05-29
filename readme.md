@@ -44,7 +44,7 @@ Comic pages can be stored in any subfolder within your Eleventy project's [input
 
 From there, you can use `collections.comics` in combination with the included `rarebit` filter to render pages using [pagination](https://www.11ty.dev/docs/pagination/). The following is an example of how that would be declared in [front matter](https://www.11ty.dev/docs/data-frontmatter/):
 
-```js
+```
 ---js
 {
   pagination: {
@@ -68,6 +68,8 @@ From there, you can use `collections.comics` in combination with the included `r
 <!-- Rest of template -->
 ```
 
+## Functions
+
 ### Shortcodes 
 
 - `renderNav`: Takes a `pagination` object to render First, Previous, Next, and Last buttons for comic templates.
@@ -81,11 +83,17 @@ From there, you can use `collections.comics` in combination with the included `r
 
 ## Options
 
+Plugin options can be passed alongside eleventy-rarebit when adding it with `.addPlugin`. There are two options that will be of interest to most people:
+
+- `imageFormats`: Takes an array of extention names that will be used by comic pages
+- `thumbnailBaseName`: Defines the name of thumbnail files used within comic folders
+
 ```js
 const eleventyRarebit = require("eleventy-rarebit");
 
 module.exports = function (eleventyConfig) {
   eleventyConfig.addPlugin(eleventyRarebit, {
+    // These are the default values set by eleventy-rarebit
     imageFormats: ["jpg", "png", "gif"],
     thumbnailBaseName: "thumb",
   });
@@ -93,6 +101,8 @@ module.exports = function (eleventyConfig) {
 ```
 
 ### Advanced: Custom Rendering
+
+Advanced users can customize how shortcodes render though plugin options as well.
 
 ```js
 module.exports = function (eleventyConfig) {
