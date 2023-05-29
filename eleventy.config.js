@@ -9,7 +9,7 @@ function rarebit(eleventyConfig, opts = {}) {
   let options = {
     ...{
       imageFormats: ["jpg", "png", "gif"], // Todo: Filter images by extensions
-      imageRender: (img, alt) => {
+      imageRender: (img, alt) => {  // Todo: Break into class? Also add image handler for coping files?
         if (img === "") return "";
         return `<img src="${img}" alt="${alt}">`;
       },
@@ -55,6 +55,12 @@ function rarebit(eleventyConfig, opts = {}) {
       };
     }
   );
+
+  eleventyConfig.addCollection("comics", (collectionApi) => {
+    return collectionApi.getAll().filter((item) => {
+      return "comicRoot" in item.data;
+    });
+  });
 
   eleventyConfig.addFilter("rarebit", function (value) {
     let output = [];
@@ -148,13 +154,17 @@ function rarebit(eleventyConfig, opts = {}) {
     );
   });
 
-  eleventyConfig.addShortcode("rarebitRenderNav", function (curPage) {
+  eleventyConfig.addFilter("chapter", function (value, chapter) {
+    return value.filter((obj) => obj.data.comic.chapters.includes(chapter));
+  });
+
+  eleventyConfig.addShortcode("renderNav", function (curPage) {
     let output = "";
     let obj;
 
     if (!curPage) {
       throw new Error(
-        `Issue with "rarebitRenderNav" shortcode in ${this.page.inputPath} (input is undefined.)`
+        `Issue with "renderNav" shortcode in ${this.page.inputPath} (input is undefined.)`
       );
     }
 
@@ -164,7 +174,7 @@ function rarebit(eleventyConfig, opts = {}) {
       obj = curPage;
     } else {
       throw new Error(
-        `Issue with "rarebitRenderNav" shortcode in ${this.page.inputPath} (input not a proper pagination object.)`
+        `Issue with "renderNav" shortcode in ${this.page.inputPath} (input not a proper pagination object.)`
       );
     }
 
@@ -185,12 +195,12 @@ function rarebit(eleventyConfig, opts = {}) {
     return output;
   });
 
-  eleventyConfig.addShortcode("rarebitRenderComic", function (curPage) {
+  eleventyConfig.addShortcode("renderComic", function (curPage) {
     let output = "";
 
     if (!curPage) {
       throw new Error(
-        `Issue with "rarebitRenderNav" shortcode in ${this.page.inputPath} (input is undefined.)`
+        `Issue with "renderComic" shortcode in ${this.page.inputPath} (input is undefined.)`
       );
     }
 
@@ -224,14 +234,12 @@ function rarebit(eleventyConfig, opts = {}) {
     return output;
   });
 
-  eleventyConfig.addShortcode("rarebitRenderArchive", function (curPage) {
+  eleventyConfig.addShortcode("renderArchive", function (curPage) {
     if (!curPage) {
       throw new Error(
-        `Issue with "rarebitRenderArchive" shortcode in ${this.page.inputPath} (input is undefined.)`
+        `Issue with "renderArchive" shortcode in ${this.page.inputPath} (input is undefined.)`
       );
     }
-
-    console.log(curPage);
 
     // Copy thumbnail to comic folders
     if (!fs.existsSync(path.join(curPage.comic.outputDir, curPage.page.url))) {
@@ -269,16 +277,6 @@ function rarebit(eleventyConfig, opts = {}) {
       title(),
       curPage.page.date
     );
-  });
-
-  eleventyConfig.addCollection("comics", (collectionApi) => {
-    return collectionApi.getAll().filter((item) => {
-      return "comicRoot" in item.data;
-    });
-  });
-
-  eleventyConfig.addFilter("chapter", function (value, chapter) {
-    return value.filter((obj) => obj.data.comic.chapters.includes(chapter));
   });
 }
 

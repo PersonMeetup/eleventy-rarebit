@@ -2,22 +2,72 @@
 layout: rarebit.njk
 ---
 
+<h1>Archive</h1>
+
+<h2>Chronological Order</h2>
+
 <div class="archive">
-  <ol>
+  <ul>
     {%- assign comic = collections.teena -%}
 	{%- for page in comic -%}
-    <li>{% rarebitRenderArchive page.data %}</li>
+    <li>{% renderArchive page.data %}</li>
     {%- endfor -%}
-  </ol>
+  </ul>
 </div>
 
-<h2>Chapter 1</h2>
+<h2>"Latest First" Order</h2>
 
 <div class="archive">
-  <ol>
-    {%- assign comic = collections.teena | chapter: "chapter1" -%}
+  <ul>
+    {%- assign comic = collections.teena | reverse -%}
 	{%- for page in comic -%}
-    <li>{% rarebitRenderArchive page.data %}</li>
+    <li>{% renderArchive page.data %}</li>
     {%- endfor -%}
-  </ol>
+  </ul>
+</div>
+
+<h2>Or, divide it into chapters/arcs</h2>
+
+<h3>Chapter 1</h3>
+
+<div class="archive">
+  <ul>
+  {%- assign comic = collections.teena | chapter: "chapter1" -%}
+	{%- for page in comic -%}
+    <li>{% renderArchive page.data %}</li>
+    {%- endfor -%}
+  </ul>
+</div>
+
+<h3>Chapter 2</h3>
+
+<div class="archive">
+  <ul>
+  {%- assign comic = collections.teena | chapter: "chapter2" -%}
+	{%- for page in comic -%}
+    <li>{% renderArchive page.data %}</li>
+    {%- endfor -%}
+  </ul>
+</div>
+
+<h3>Chapter 3</h3>
+
+<div class="archive">
+  <ul>
+  {%- assign comic = collections.teena | chapter: "chapter3" -%}
+	{%- for page in comic -%}
+    <li>{% renderArchive page.data %}</li>
+    {%- endfor -%}
+  </ul>
+</div>
+
+<h3>Chapter 4</h3>
+
+<div class="archive">
+  <ul>
+  {%- assign comic = collections.teena | chapter: "chapter4" -%}
+	{%- for page in comic -%}
+    <li>{% renderArchive page.data %}</li>
+    {%- endfor -%}
+  </ul>
 </div>

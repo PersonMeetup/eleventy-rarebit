@@ -14,13 +14,13 @@
   permalink: data => `comic/${data.pagination.pageNumber + 1}/`,
   eleventyComputed: {
     title: data => data.comic.title,
-    title: data => data.comic.notes
+    notes: data => data.comic.notes
   }
 }
 ---
 
 <h2>{{ title }}</h2>
 
-{% rarebitRenderNav pagination %}
+{% renderNav pagination %}
 
-<div class="comic">{% rarebitRenderComic comic %}</div>
+<div class="comic">{% renderComic comic %}</div>
