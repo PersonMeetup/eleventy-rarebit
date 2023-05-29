@@ -26,9 +26,9 @@ After that, open up your Eleventy [config file](https://www.11ty.dev/docs/config
 const eleventyRarebit = require("eleventy-rarebit");
 
 module.exports = function (eleventyConfig) {
-	// If your config already has a module.exports, just
-	// add the following code inside of it.
-	eleventyConfig.addPlugin(eleventyRarebit);
+  // If your config already has a module.exports, just
+  // add the following code inside of it.
+  eleventyConfig.addPlugin(eleventyRarebit);
 };
 ```
 
@@ -38,7 +38,7 @@ Comic pages can be stored in any subfolder within your Eleventy project's [input
 
 ```json
 {
-	"comicRoot": "some-folder"
+  "comicRoot": "some-folder"
 }
 ```
 
@@ -47,22 +47,22 @@ From there, you can use `collections.comics` in combination with the included `r
 ```js
 ---js
 {
-	pagination: {
-		data: "collections.comics",
-		size: 1,
-		alias: "comic",
-		addAllPagesToCollections: true,
-		before: function(paginationData) {
-				return this.rarebit(paginationData);
-			}
-	},
-	layout: "rarebit.njk",
-	tags: ['myComic'],
-	permalink: data => `comic/${data.pagination.pageNumber + 1}/`,
-	eleventyComputed: {
-		title: data => data.comic.title,
-		notes: data => data.comic.notes
-	}
+  pagination: {
+    data: "collections.comics",
+    size: 1,
+    alias: "comic",
+    addAllPagesToCollections: true,
+    before: function(paginationData) {
+        return this.rarebit(paginationData);
+      }
+  },
+  layout: "rarebit.njk",
+  tags: ['myComic'],
+  permalink: data => `comic/${data.pagination.pageNumber + 1}/`,
+  eleventyComputed: {
+    title: data => data.comic.title,
+    notes: data => data.comic.notes
+  }
 }
 ---
 <!-- Rest of template -->
@@ -85,10 +85,10 @@ From there, you can use `collections.comics` in combination with the included `r
 const eleventyRarebit = require("eleventy-rarebit");
 
 module.exports = function (eleventyConfig) {
-	eleventyConfig.addPlugin(eleventyRarebit, {
-		imageFormats: ["jpg", "png", "gif"],
-		thumbnailBaseName: "thumb",
-	});
+  eleventyConfig.addPlugin(eleventyRarebit, {
+    imageFormats: ["jpg", "png", "gif"],
+    thumbnailBaseName: "thumb",
+  });
 };
 ```
 
@@ -96,20 +96,20 @@ module.exports = function (eleventyConfig) {
 
 ```js
 module.exports = function (eleventyConfig) {
-	eleventyConfig.addPlugin(eleventyRarebit, {
-		imageRender: (img, alt) => {
-			if (img === "") return "";
-			return `<img src="${img}" alt="${alt}">`;
-		},
-		archiveRender: (url, thumb, title, date) => {
-			return `<a href="${url}">
-								<div>
-									${options.imageRender(thumb, `Thumbnail for '${title}'`)}
-									<h3>${title}</h3>
-									<span>${date.toDateString().slice(4)}</span>
-								</div>
-							</a>`;
-		}
-	});
+  eleventyConfig.addPlugin(eleventyRarebit, {
+    imageRender: (img, alt) => {
+      if (img === "") return "";
+      return `<img src="${img}" alt="${alt}">`;
+    },
+    archiveRender: (url, thumb, title, date) => {
+      return `<a href="${url}">
+                <div>
+                  ${options.imageRender(thumb, `Thumbnail for '${title}'`)}
+                  <h3>${title}</h3>
+                  <span>${date.toDateString().slice(4)}</span>
+                </div>
+              </a>`;
+    }
+  });
 };
 ```
